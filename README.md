@@ -28,3 +28,7 @@
     curl http://127.0.0.1:3000/users/1
   ```
   
+  6、mac环境重启 `db`
+  ```rb
+    docker start db-for-mangosteen
+  ```
