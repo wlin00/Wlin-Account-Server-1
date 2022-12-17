@@ -50,3 +50,47 @@
   ```rb
     bin/rails g kaminari:config
   ```
+
+  9、使用 `kaminari` 分页查询demo
+  ```rb
+    # 查询账单记录
+    items = Item.page(params[:page]).per(10) # 分页大小为10
+    render json: {
+      resource: items,
+      pageInfo: {
+        pageNo: params[:page],
+        pageSize: 10,
+        totalCount: Item.count
+      }
+    }
+  ```
+
+  10、安装单元测试框架 `rspec-rails` & 创建`测试环境数据库` 和 `建表`
+  ```rb
+    # 在Gemfile中
+    group :development, :test do
+      gem 'rspec-rails', '~> 5.0.0'
+    end
+    # 然后安装依赖
+    bundle install --verbose
+    # 然后生成rspec.rb
+    bin/rails generate rspec:install
+    # 创建测试环境数据库 （先在database.yml) 中完善测试数据库的用户名、pwd、host等信息
+    RAILS_ENV=test bin/rails db:create
+    # 创建测试环境表，只需要将现有的db/migrate同步测试数据库
+    RAILS_ENV=test bin/rails db:migrate
+  ```
+
+  11、测试model
+  ```rb
+    bin/rails generate rspec:model user
+  ```
+
+  12、测试controller
+  ```rb
+  ```
+
+  13、执行单测
+  ```rb
+    bundle exec rspec
+  ```
