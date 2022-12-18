@@ -15,10 +15,10 @@ class Api::V1::ItemsController < ApplicationController
         per_page: '100', # pageSize
         count: Item.count
       }
-    }
+    }, status: 200 # 可修改返回状态码
   end
   def create # 创建账单记录
-    item = Item.new amount: 1
+    item = Item.new amount: params[:amount]
     if item.save
       render json: { resource: item }
     else

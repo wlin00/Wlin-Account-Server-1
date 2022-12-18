@@ -83,10 +83,11 @@
 
   11、测试model
   ```rb
-    bin/rails generate rspec:model user
+    bin/rails generate rspec:model items
   ```
 
-  12、测试controller
+  12、测试controller - 请求测试
+    bin/rails generate rspec:request items
   ```rb
   ```
 
