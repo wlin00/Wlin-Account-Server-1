@@ -87,11 +87,19 @@
   ```
 
   12、测试controller - 请求测试
-    bin/rails generate rspec:request items
   ```rb
+    # 测试 账单记录controller
+    bin/rails generate rspec:request items
+    # 测试 验证码controller
+    bin/rails generate rspec:request validation_codes
   ```
 
   13、执行单测
   ```rb
     bundle exec rspec
+  ```
+
+  14、rails借助 `SecureRandom` 生成一个`真随机`的`六位`数字验证码
+  ```rb
+  code = SecureRandom.random_number.to_s[2..7] # 生成一个安全真随机数，本质上是一个小数(0.3213213213...)，转化为字符串，并截取小数点后的1-6位，作为当前随机6位验证码
   ```

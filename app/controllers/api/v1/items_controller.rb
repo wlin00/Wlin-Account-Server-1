@@ -25,4 +25,10 @@ class Api::V1::ItemsController < ApplicationController
       render json: { errors: item.errors }  
     end  
   end
+  def getFirstItem # 获取第一条账单
+    item = Item.page(1).per(1)
+    render json: { 
+      resource: item
+    }, status: 200 # 可修改返回状态码
+  end  
 end
