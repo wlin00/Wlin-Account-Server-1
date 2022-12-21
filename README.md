@@ -1,5 +1,75 @@
 ## 笔记：我的Rails + Vue3/React + postgresql 的全栈应用
-# 一、常用rails操作
+
+# 一、环境配置
+  1、初始化数据库,在mac环境，执行下面代码初始化创建数据库，以`db-for-mangosteen`为主键key，并且关联到网络`network1`
+  ```rb
+    docker run -d      --name db-for-mangosteen      -e POSTGRES_USER=mangosteen      -e POSTGRES_PASSWORD=123456      -e POSTGRES_DB=mangosteen_dev      -e PGDATA=/var/lib/postgresql/data/pgdata      -v mangosteen-data:/var/lib/postgresql/data      --network=network1      postgres:14
+  ```
+
+# 二、部署配置
+  1、持久化云服务器远程连接的`超时时长`：
+    命令行输入 `vi /etc/ssh/sshd_config`，然后找到 `ClientAliveInterval` 修改为300，表示最大超时时长为5分钟, 找到 `ClientAliveCountMax` 修改为5，表示最大连接数为5
+
+  2、ubuntu安装`docker`， `root` 用户权限下
+  ```ts
+    (1) 进入网站：https://docs.docker.com/engine/install/ubuntu/
+    (2) 云服务器更新apt-get: apt-get update
+    (3) 安装其他依赖：
+      apt-get install \
+      ca-certificates \
+      curl \
+      gnupg \
+      lsb-release
+    (4) Add Docker’s `official GPG key`:
+      mkdir -p /etc/apt/keyrings
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    (5) 开启 `docker` 仓库 :
+      echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    (6) 安装docker:
+      apt-get update  
+      apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    (7) 验证docker安装成功
+      docker --version
+      docker run hello-world
+  ```
+
+  3、为当前项目和docker添加一个专属用户，而非一直使用`root`，方便后续开发：
+  ```ts
+    (1) adduser mangosteen, 创建一个专属用户 mangosteen 及其分组，
+    (2) 将mongosteen用户添加到docker组： usermod -a -G docker mangosteen
+    (3) 然后将root的 ~/.ssh/authroized_keys, 复制到mangosteen用户的home/.ssh目录, 并且将复制文件的权限交接给mangosteen用户：
+      - 先进入 /home/mangosteen 创建.ssh文件夹，cd /home/mangosteen | mkdir .ssh
+      - 然后进行文件拷贝：cp ~/.ssh/authroized_keys /home/mangosteen/.ssh
+      - 文件交接，在/home/mangosteen目录下，交接.ssh权限给mangosteen：chown -R mangosteen:mangosteen .ssh
+  ```
+
+  4、使用 `docker` 部署思路 
+  `后端部署`步骤
+  ```ts
+    (1) 云服务器准备一个新用户
+    (2) 云服务器上安装docker
+    (3) 上传本地的Dockerfile 和 源代码
+    (4) 用Dockerfile构建运行环境
+    (5) 在运行环境里运行源代码
+    (6) 用 Nginx 做转发
+  ```
+  `后端版本更新`步骤
+  ```ts
+    (1) 上传新Dockerfile
+    (2) 上传新的源代码
+    (3) 用Dockerfile构建运行环境
+    (4) 在新的运行环境里运行新的源代码
+    (5) 用 Nginx 做转发
+  ```
+  `前端部署`步骤
+  ```ts
+    (1) 将静态资源上传CDN，代码中引用路径也改为cdn地址
+    (2) 将项目打包上传到云服务器的nginx/html目录，并进行反向代理和gzip压缩等，需要分流考虑负载均衡
+  ```
+
+# 三、常用rails操作
   1、建表 - 建立`postgresql`中的一个`model模型`如User，执行后会生成两个文件：
     一是：class构造函数`user.rb` ，可用于定义一些字段约束，如`email字段必填校验`等；
     二是：用于直接修改数据库的`migrate`文件 `create_users.rb`，可以在此定义主键，或增加`长度limit`等校验
@@ -103,3 +173,5 @@
   ```rb
   code = SecureRandom.random_number.to_s[2..7] # 生成一个安全真随机数，本质上是一个小数(0.3213213213...)，转化为字符串，并截取小数点后的1-6位，作为当前随机6位验证码
   ```
+
+  15、云服务器
