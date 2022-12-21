@@ -1,11 +1,11 @@
 Rails.application.routes.draw do
+  get '/', to: 'home#index'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Defines the root path route ("/")
   # root "articles#index"
   # post '/users', to: 'users#create'
   # get '/users/:id', to: 'users#show'
-  # get 'validation_codes/create'
   get '/api/v1/getFirstItem', to: 'api/v1/items#getFirstItem' 
   namespace :api do
     namespace :v1 do
