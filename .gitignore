@@ -29,3 +29,5 @@
 #/config/master.key # 开发环境的密钥不被ignore，表示所有开发者可以在开发环境共享密钥，而生产环境密钥需要单独被最高权限者写到生产环境的环境变量中
 /config/credentials/production.key
 /config/master.key
+/vendor/cache
+/tmp/*.gz

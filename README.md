@@ -76,7 +76,7 @@
     (3) 执行 pack_for_host.sh 来将应用源代码打包至宿主环境
   ```
 
-  6、执行代码
+  6、执行代码 - 宿主机部署
   ```ts
     // （1）linux里打包源代码到宿主环境
     sh bin/pack_for_host.sh
@@ -84,9 +84,143 @@
     DB_HOST=db-for-mangosteen DB_PASSWORD=123456 RAILS_MASTER_KEY=2617e5cf2af9fc0108db38b42b470b80 mangosteen_deploy/setup_host.sh
     // （3）创建生产环境数据库
     docker exec -it mangosteen-prod-1 bin/rails db:create db:migrate
+    // （4）宿主机部署的 host.DockerFile，用于构建docker镜像
+    FROM ruby:3.0.0
+    ENV RAILS_ENV production
+    RUN mkdir /mangosteen
+    RUN bundle config mirror.https://rubygems.org https://gems.ruby-china.com
+    WORKDIR /mangosteen
+    ADD mangosteen-*.tar.gz ./
+    RUN bundle config set --local without 'development test'
+    RUN bundle install
+    ENTRYPOINT bundle exec puma
   ```
 
-# rails 密钥管理 - 开发环境和生产环节各有一个128位的密钥用于对称加密，来让应用具备安全性
+  7、执行代码 - 自动化云服务器部署
+  ```sh
+    # （1）linux里打包源代码到云服务器（scp -> ssh cp），然后在云服务器构建 Dockerfile出生产环境，并写入生产环境密钥
+    sh bin/pack_for_remote.sh
+
+    # （2）pack_for_remote.sh, 解析
+    # 注意修改 user 和 ip
+    user=mangosteen # 写好环境变量：ssh用户名、ip地址
+    ip=47.94.212.148
+    time=$(date +'%Y%m%d-%H%M%S')
+    dist=tmp/mangosteen-$time.tar.gz
+    current_dir=$(dirname $0)
+    deploy_dir=/home/$user/deploys/$time
+    gemfile=$current_dir/../Gemfile
+    gemfile_lock=$current_dir/../Gemfile.lock
+    vendor_cache_dir=$current_dir/../vendor/cache
+    function title { # log 函数
+      echo 
+      echo "###############################################################################"
+      echo "## $1"
+      echo "###############################################################################" 
+      echo 
+    }
+    yes | rm tmp/mangosteen-*.tar.gz;  # 删除之前的源代码压缩包
+    title '打包源代码为压缩文件'
+    bundle cache
+    tar --exclude="tmp/cache/*" -czv -f $dist * # 压缩源代码为tar文件，可被docker构建时的ADD命令解压缩
+    title '创建远程目录'
+    ssh $user@$ip "mkdir -p $deploy_dir/vendor"
+    title '上传压缩文件'
+    scp $dist $user@$ip:$deploy_dir/ # ssh cp
+    scp $gemfile $user@$ip:$deploy_dir/
+    scp $gemfile_lock $user@$ip:$deploy_dir/
+    scp -r $vendor_cache_dir $user@$ip:$deploy_dir/vendor/
+    title '上传 Dockerfile'
+    scp $current_dir/../config/host.Dockerfile $user@$ip:$deploy_dir/Dockerfile # 核心文件上传
+    title '上传 setup 脚本'
+    scp $current_dir/setup_remote.sh $user@$ip:$deploy_dir/
+    title '上传版本号'
+    ssh $user@$ip "echo $time > $deploy_dir/version"
+    title '执行远程脚本'
+    ssh $user@$ip "export version=$time; /bin/bash $deploy_dir/setup_remote.sh" # 跑完pack_for_remote.sh 继续跑setup_remote.sh 来构建docker，然后在开发环境执行源代码 以及初始化/更新数据库
+
+    # （3）setup_remote.sh, 解析
+    # 环境变量初始化
+    user=mangosteen
+    root=/home/$user/deploys/$version
+    container_name=mangosteen-prod-1
+    db_container_name=db-for-mangosteen-production
+    DB_HOST=db-for-mangosteen-production
+    RAILS_MASTER_KEY=2617e5cf2af9fc0108db38b42b470b80
+    DB_PASSWORD=123456
+    function set_env { # 可供输入参数
+      name=$1
+      while [ -z "${!name}" ]; do
+        echo "> 请输入 $name:"
+        read $name
+        sed -i "1s/^/export $name=${!name}\n/" ~/.bashrc
+        echo "${name} 已保存至 ~/.bashrc"
+      done
+    }
+    function title { # log function
+      echo 
+      echo "###############################################################################"
+      echo "## $1"
+      echo "###############################################################################" 
+      echo 
+    }
+    title '创建数据库'
+    if [ "$(docker ps -aq -f name=^${DB_HOST}$)" ]; then
+      echo '已存在数据库'
+    else # 创建数据库
+      docker run -d --name $DB_HOST \
+                --network=network2 \
+                -e POSTGRES_USER=mangosteen \
+                -e POSTGRES_DB=mangosteen_production \
+                -e POSTGRES_PASSWORD=$DB_PASSWORD \
+                -e PGDATA=/var/lib/postgresql/data/pgdata \
+                -v mangosteen-data:/var/lib/postgresql/data \
+                postgres:14
+      echo '创建成功'
+    fi
+    title 'docker build'
+    docker build $root -t mangosteen:$version  # 构建docker镜像
+    if [ "$(docker ps -aq -f name=^mangosteen-prod-1$)" ]; then
+      title 'docker rm'
+      docker rm -f $container_name
+    fi
+    title 'docker run'
+    docker run -d -p 3000:3000 \ # docker运行
+              --network=network2 \ 
+              --name=$container_name \
+              -e DB_HOST=$DB_HOST \
+              -e DB_PASSWORD=$DB_PASSWORD \
+              -e RAILS_MASTER_KEY=$RAILS_MASTER_KEY \
+              mangosteen:$version
+
+    echo
+    echo "是否要更新数据库？[y/N]"
+    read ans
+    case $ans in # 生产环境数据库同步
+        y|Y|1  )  echo "yes"; title '更新数据库'; docker exec $container_name bin/rails db:create db:migrate ;;
+        n|N|2  )  echo "no" ;;
+        ""     )  echo "no" ;;
+    esac
+
+    title '全部执行完毕'
+
+    # （4）云服务器部署的 host.DockerFile，用于docker build
+    FROM ruby:3.0.0
+    ENV RAILS_ENV production
+    RUN mkdir /mangosteen
+    RUN bundle config mirror.https://rubygems.org https://gems.ruby-china.com
+    WORKDIR /mangosteen
+    ADD Gemfile /mangosteen
+    ADD Gemfile.lock /mangosteen
+    ADD vendor/cache /mangosteen/vendor/cache
+    RUN bundle config set --local without 'development test'
+    RUN bundle install --local
+    ADD mangosteen-*.tar.gz ./
+    ENTRYPOINT bundle exec puma
+  ```
+
+
+# 三、rails 密钥管理 - 开发环境和生产环节各有一个128位的密钥用于对称加密，来让应用具备安全性
   1、创建开发环境的master.key密钥，rails会对应创建加密好后的密文.enc，并复制放在临时文件中的密钥 `secret_key_base`
   ```ts
     // 创建开发环境密钥 & 密文，来获取开发环境权限
