@@ -12,7 +12,7 @@ class Api::V1::ItemsController < ApplicationController
     render json: { 
       resource: items, pager: {
         page: params[:page] || '1',
-        per_page: '100', # pageSize
+        per_page: '10', # pageSize
         count: Item.count
       }
     }, status: 200 # 可修改返回状态码
