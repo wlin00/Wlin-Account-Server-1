@@ -1,7 +1,8 @@
 DB_PASSWORD=123456
 container_name=mangosteen-prod-1
-
 version=$(cat mangosteen_deploy/version)
+DB_HOST=db-for-mangosteen
+RAILS_MASTER_KEY=2617e5cf2af9fc0108db38b42b470b80
 
 echo 'docker build ...'
 docker build mangosteen_deploy -t mangosteen:$version

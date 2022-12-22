@@ -80,8 +80,8 @@
   ```ts
     // （1）linux里打包源代码到宿主环境
     sh bin/pack_for_host.sh
-    // （2）宿主机运行setup_host.sh 并传递DB_HOST、DB_PASSWORD、RAILS_MASTER_KEY 来启动外部容器并构建dockerFile的《生产环境》
-    DB_HOST=df-for-mangosteen DB_PASSWORD=123456 RAILS_MASTER_KEY=2617e5cf2af9fc0108db38b42b470b80 mangosteen_deploy/setup_host.sh
+    // （2）宿主机VsCode运行setup_host.sh 并传递DB_HOST、DB_PASSWORD、RAILS_MASTER_KEY 来启动外部容器并构建dockerFile的《生产环境》
+    DB_HOST=db-for-mangosteen DB_PASSWORD=123456 RAILS_MASTER_KEY=2617e5cf2af9fc0108db38b42b470b80 mangosteen_deploy/setup_host.sh
     // （3）创建生产环境数据库
     docker exec -it mangosteen-prod-1 bin/rails db:create db:migrate
   ```
