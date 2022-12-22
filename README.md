@@ -69,7 +69,42 @@
     (2) 将项目打包上传到云服务器的nginx/html目录，并进行反向代理和gzip压缩等，需要分流考虑负载均衡
   ```
 
-# 三、常用rails操作
+  5、部署当前应用到 `宿主机（mac）`步骤
+  ```ts
+    (1) 增加 pack_for_host.sh、setup_host.sh、host.Dockerfile等文件
+    (2) 更改 pack_for_host.sh 执行权限： chmod +x bin/pack_for_host.sh
+    (3) 执行 pack_for_host.sh 来将应用源代码打包至宿主环境
+  ```
+
+# rails 密钥管理
+  1、创建开发环境的master.key密钥，rails会对应创建加密好后的密文.enc，并复制放在临时文件中的密钥 `secret_key_base`
+  ```ts
+    // 创建开发环境密钥 & 密文，来获取开发环境权限
+    rm config/credentials.yml.enc
+    EDITOR="code --wait" bin/rails credentials:edit 
+  ```
+  2、创建生产环境密钥key，然后将复制的开发环境密钥替换给当前密钥
+  ```ts
+    EDITOR="code --wait" bin/rails credentials:edit --env prod
+  ```
+  3、重新生成一次开发环境密钥
+  ```ts
+    EDITOR="code --wait" bin/rails credentials:edit 
+  ```
+  4、如何查看开发/生产环境的密钥：
+  ```rb
+    # （1）打开开发环境的控制台
+    bin/rails console
+    # 使用开发环境的密钥，查看开发环境密文（获取所有加密信息的明文）
+    Rails.application.credentials.config
+
+    # （2）打开生产环境的控制台
+    RAILS_ENV=production bin/rails console
+    # 使用生产环境的密钥，查看生产环境密文（获取所有加密信息的明文）
+    Rails.application.credentials.config
+  ```
+
+# 四、常用rails操作
   1、建表 - 建立`postgresql`中的一个`model模型`如User，执行后会生成两个文件：
     一是：class构造函数`user.rb` ，可用于定义一些字段约束，如`email字段必填校验`等；
     二是：用于直接修改数据库的`migrate`文件 `create_users.rb`，可以在此定义主键，或增加`长度limit`等校验
