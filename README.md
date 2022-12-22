@@ -76,6 +76,16 @@
     (3) 执行 pack_for_host.sh 来将应用源代码打包至宿主环境
   ```
 
+  6、执行代码
+  ```ts
+    // （1）linux里打包源代码到宿主环境
+    sh bin/pack_for_host.sh
+    // （2）宿主机运行setup_host.sh 并传递DB_HOST、DB_PASSWORD、RAILS_MASTER_KEY 来启动外部容器并构建dockerFile的《生产环境》
+    DB_HOST=df-for-mangosteen DB_PASSWORD=123456 RAILS_MASTER_KEY=2617e5cf2af9fc0108db38b42b470b80 mangosteen_deploy/setup_host.sh
+    // （3）创建生产环境数据库
+    docker exec -it mangosteen-prod-1 bin/rails db:create db:migrate
+  ```
+
 # rails 密钥管理 - 开发环境和生产环节各有一个128位的密钥用于对称加密，来让应用具备安全性
   1、创建开发环境的master.key密钥，rails会对应创建加密好后的密文.enc，并复制放在临时文件中的密钥 `secret_key_base`
   ```ts
