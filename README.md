@@ -76,7 +76,7 @@
     (3) 执行 pack_for_host.sh 来将应用源代码打包至宿主环境
   ```
 
-# rails 密钥管理
+# rails 密钥管理 - 开发环境和生产环节各有一个128位的密钥用于对称加密，来让应用具备安全性
   1、创建开发环境的master.key密钥，rails会对应创建加密好后的密文.enc，并复制放在临时文件中的密钥 `secret_key_base`
   ```ts
     // 创建开发环境密钥 & 密文，来获取开发环境权限
@@ -85,7 +85,7 @@
   ```
   2、创建生产环境密钥key，然后将复制的开发环境密钥替换给当前密钥
   ```ts
-    EDITOR="code --wait" bin/rails credentials:edit --env prod
+    EDITOR="code --wait" bin/rails credentials:edit --environment production
   ```
   3、重新生成一次开发环境密钥
   ```ts
