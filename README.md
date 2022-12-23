@@ -353,4 +353,49 @@
   code = SecureRandom.random_number.to_s[2..7] # 生成一个安全真随机数，本质上是一个小数(0.3213213213...)，转化为字符串，并截取小数点后的1-6位，作为当前随机6位验证码
   ```
 
-  15、云服务器
+  15、使用Rails的 `Action Mailer` 模块 结合qq邮箱的 `第三方授权secret` 发邮件
+  ```rb
+    # (1) 创建rails的 mailer 模块
+    bin/rails generate mailer User
+    # (2) 进入/app/mailers/application_mailer.rb 在 ApplicationMailer 的类中，写好默认的邮递员配置
+    class ApplicationMailer < ActionMailer::Base
+      default from "616294069@qq.com"
+      layout "mailer"
+    end
+    # (3) 进入/app/mailers/user_mailer.rb, 配置发送邮件的参数信息
+    class UserMailer < ApplicationMailer
+      def welcome_email(code)
+        @code = code # 将入参的验证码传给@code，即可展示在html中
+        mail(to: "wlin0z@163.com", subject: '请查收您的验证码')
+      end
+    end
+    # (4) 进入/app/views/user_mailer 目录，新建邮件视图 welcome_email.html.erb
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+      </head>
+      <body>
+      您的验证码为 <%= @code %>
+      </body>
+    </html> 
+    # (5) 去qq邮箱，拿到个人账号的第三方授权密钥，然后将这个密钥添加到 rails的密钥管理的 《email_password》字段； 
+    EDITOR="code --wait" bin/rails credentials:edit 
+    # 然后修改 /config/environments/development.rb 添加对应密钥信息
+    config.action_mailer.raise_delivery_errors = true
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      address:              'smtp.qq.com',
+      port:                 587,
+      domain:               'smtp.qq.com',
+      user_name:            '616294069@qq.com',
+      password:             Rails.application.credentials.email_password, # 拿到当前邮递员的qq邮箱第三方授权密钥
+      authentication:       'plain',
+      enable_starttls_auto: true,
+      open_timeout:         10,
+      read_timeout:         10
+    }
+    # (6) 可以在rails console中测试发邮件功能
+    bin/rails console
+    UserMailer.welcome_email('123456').deliver # 也可发送六位真随机数 SecureRandom.random_number.to_s[2..7] 
+  ```

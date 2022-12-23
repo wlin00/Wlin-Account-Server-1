@@ -34,7 +34,20 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = true
+
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address:              'smtp.qq.com',
+    port:                 587,
+    domain:               'smtp.qq.com',
+    user_name:            '616294069@qq.com',
+    password:             Rails.application.credentials.email_password, # 拿到当前邮递员的qq邮箱第三方授权密钥
+    authentication:       'plain',
+    enable_starttls_auto: true,
+    open_timeout:         10,
+    read_timeout:         10
+  }
 
   config.action_mailer.perform_caching = false
 
