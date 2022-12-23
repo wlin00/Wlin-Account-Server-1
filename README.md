@@ -399,3 +399,16 @@
     bin/rails console
     UserMailer.welcome_email('123456').deliver # 也可发送六位真随机数 SecureRandom.random_number.to_s[2..7] 
   ```
+
+  16、TDD 测试驱动开发, 开发完api ， 借助 `rspec_api_documentation` 生成api文档
+  ```rb
+    # (1) 添加《rspec_api_documentation》依赖, 并安装
+    bundle install
+    # (2) 根据官方文档创建文件目录, 写入测试示例
+    mkdir spec/acceptance
+    code spec/acceptance/order_spec.rb
+    # (3) 生成文档
+    bin/rake docs:generate 
+    # (4) http-server 查看文档
+    npx http-server doc/api/.
+  ```
