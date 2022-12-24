@@ -8,6 +8,7 @@ resource "ValidationCodes" do
     example "send validation code" do
       do_request
       expect(status).to eq 200
+      expect(JSON.parse(response_body)['code']).to be_nil # 期望响应体里不返回验证码，而是要让用户去邮箱里查收validation code
     end
   end
 end
