@@ -282,7 +282,11 @@
     # get 请求，按ID查询接口
     curl http://127.0.0.1:3000/users/1
     # post 路由中调用
-    curl -X POST http://127.0.0.1:3000/api/v1/items  
+    curl -X POST http://127.0.0.1:3000/api/v1/validation_codes -H "Content-Type: application/json" -d '{"email":"wlin0z@163.com"}'
+    # 手动在bin/rails console中创建记录，如创建一条验证码, 并测试发送邮件功能
+    validation_code = ValidationCode.new email: 'wlin0z@163.com', kind: 'sign_in'
+    validation_code.save
+    UserMailer.welcome_email('wlin0z@163.com').deliver!
   ```
   
   6、mac环境重启 `db`

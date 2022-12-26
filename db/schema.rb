@@ -17,7 +17,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_12_17_065203) do
   create_table "items", force: :cascade do |t|
     t.bigint "user_id"
     t.integer "amount"
-    t.text "notes"
+    t.text "note"
     t.bigint "tags_id", array: true
     t.datetime "happen_at"
     t.datetime "created_at", null: false
