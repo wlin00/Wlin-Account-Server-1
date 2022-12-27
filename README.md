@@ -416,3 +416,99 @@
     # (4) http-server 查看文档
     npx http-server doc/api/.
   ```
+
+  17、`Jwt`相关笔记
+  (1) jwt 定义 - json web token，可理解为把uid加密后的一个字符串
+  即 `base64（header) + '.' + base64（payload) + '.' + base64（signature) + '.'` 的加密字符串的拼接
+  ```ts
+    jwt 由三个部分组成
+     - Header：表示当前加密算法如HS256、和type类型如JWT
+     - payload：表示当前的json，可包含用户信息如loggedInas：'admin', 可包含用户uid
+     - signature：通过加密算法，来处理（私钥，base64(header), base64(payload))的集合，服务器可以对签名进行解密然后验证签名内的uid和签名外的是否一致，来确保jwt没有被篡改
+  ```
+
+  (2) 前后端使用 `jwt` 进行 `登录鉴权` 
+  ```ts
+    - 前端登陆后，后端返回jwt，前端将jwt存储在 localstorage 里并在axios请求头进行拦截，在每一个请求头里添加jwt（一般是Authorization的字段）
+    - 后端如果发现请求头中有authorization字段，就解密jwt，验证里外的uid是否一致来确定jwt是否被篡改从而进行登陆鉴权
+  ```  
+   
+  (3) jwt 实例的`结构解析`
+  下面是一个 jwt示例
+  ```ts
+    const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo0fQ.e8H0uo4CFXbcva_sJlv-dmo6jmiMzUvR35pyWZo7gG0'
+    // 分别使用 反base64（window.atob)方法 对前两部分header、payload进行转义
+    window.atob('eyJhbGciOiJIUzI1NiJ9') // '{"alg":"HS256"}'
+    window.atob('eyJ1c2VyX2lkIjo0fQ') // '{"user_id":4}'
+    // 而第三部分需要用当前HS256 对称加密算法（全称是：是HMAC+SHA256）结合密钥进行解密，解密结果是前两部分的一个整合；可以对比内外的user_id来判断jwt是否经过篡改
+  ```
+
+  (4) `jwt`的加密encode和解密decode用法
+  ```rb
+    #encode - 生成token
+    payload = { user_id: user.id }
+    # 传入载荷、密钥、加密算法：对称加密Hmac256 来生成jwt加密字符串
+    token = JWT.encode payload, Rails.application.credentials.hmac_secret, 'HS256' 
+    render status: :ok, json: { jwt: token }
+
+    #decode - 获取请求头中的jwt，解密出jwt前两部分header和payload组成的对象数组([payload, header])
+    header = request.headers['Authorization']
+    jwt = header.split(' ')[1] rescue '' # rescue等同于try-catch
+    payload = JWT.decode jwt, Rails.application.credentials.hmac_secret, true, { algorithm: 'HS256' } rescue nil
+    return head 400 if payload.nil? # 如果当前解密发现jwt错误，返回400
+    user_id = payload[0]['user_id'] rescue nil
+    user = User.find user_id
+    return head 404 if user.nil?
+    render json: { resource: user }
+  ```
+
+  18、`登陆接口`相关笔记
+  (1) rails创建 `session_controller`：
+  ```rb
+    bin/rails g controller api/v1/sessions_controller # controller前缀为复数
+  ```
+  (2) 编写登陆接口前, 先编写登录接口的测试用例，测试驱动开发
+  ```rb
+    # spec/requests/api/v1/sessions_spec.rb
+    require 'rails_helper'
+    RSpec.describe "Api::V1::Sessions", type: :request do
+      describe "POST /api/v1/session" do
+        it "can create a session" do # 期望有User账号后，能进行会话登陆，登陆后状态码200 & 响应体中有key为jwt & value为string的字段
+          User.create email: 'wlin0z@163.com'
+          post '/api/v1/session', params: { email: 'wlin0z@163.com', code: '123456' } # 模拟发送登陆（创建会话）请求
+          expect(response).to have_http_status(200)
+          json = JSON.parse response.body
+          expect(json['jwt']).to be_a(String) # 期望响应体的jwt字段是个string，若期望jwt为null可以写成 .to be_nil
+        end
+      end
+    end
+  ```
+  (3) 编写登陆接口，即创建会话接口 `create` 
+  ```rb
+    require 'jwt'
+    class Api::V1::SessionsController < ApplicationController
+    def create
+      # 若当前是测试环境，验证码code固定为 '123456'
+      if Rails.env.test?
+        return status: :unauthorized if params[:code] != '123456'
+      end
+      # 若前当非测试环境，需先进行《当前会话前是否发送验证码》校验
+      if !Rails.env.test?
+        canSignInFlag = ValidationCodes.exists? email: params[:email], code: params[:code], used_at: nil
+        return render status: :unauthorized unless canSignInFlag # 若不能登陆则return
+      end
+      # 创建会话，校验当前user是否存在于User表中（防止错误删除了User表)
+      user = User.find_by_email params[:email]
+      if user.nil?
+        return render status: :not_found, json: {errors: '用户不存在'}
+      end
+      # 登陆校验成功，创建响应数据；载荷里放入uid
+      # 在rails密钥管理中写入 hmac的密钥 -> hmac_secret: 'wlin$ecretK3y5050'
+      payload = { user_id: user.id }
+      # 创建JWT，定义header、payload、signature，传入payload、加密密钥和header中的加密算法
+      token = JWT.encode payload, Rails.application.credentials.hmac_secret, 'HS256' 
+      render json: { jwt: token }, status: :ok
+    end
+  ```
+
+
