@@ -459,8 +459,26 @@
     user_id = payload[0]['user_id'] rescue nil
     user = User.find user_id
     return head 404 if user.nil?
-    render json: { resource: user }
+    render json: { resource: user }     
   ```
+
+  (5) 将jwt的decode抽离成rails的 `中间件` 
+  ```rb
+    - 修改application.rb
+      # 引入自定义的jwt中间件，用于route -> controller之间的jwt处理，会提取当前登陆用户的user_id
+      require_relative "../lib/auto_jwt" 
+      # class Application 中，使用中间件
+      config.middleware.use AutoJwt
+    
+    - 实现auto_jwt.rb
+      class AutoJwt
+        def initialize(app)
+        end
+        def call(env)
+        end
+      end
+  ```  
+
 
   18、`登陆接口`相关笔记
   (1) rails创建 `session_controller`：
