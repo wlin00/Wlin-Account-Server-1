@@ -9,13 +9,8 @@ class Api::V1::SessionsController < ApplicationController
       canSignInFlag = ValidationCodes.exists? email: params[:email], code: params[:code]
       return render status: :unauthorized, json: { errors: '用户名或验证码错误' } unless canSignInFlag
     end
-    # 创建会话，校验当前user是否存在于User表中（防止错误删除了User表)
-    user = User.find_by_email(params[:email])
-    if user.nil?
-      return render status: :not_found, json: { errors: '当前用户不存在' }
-    end
-    # 登陆校验成功，创建响应数据；载荷里放入uid
-    # 在rails密钥管理中写入 hmac的密钥 -> hmac_secret: 'wlin$ecretK3y5050'
+    # 创建会话，若当前user是否存在于User表中，则查询到当user，否则创建新的user（使用rails的 User.find_or_create_by 方法来创建或查询）
+    user = User.find_or_create_by email: params[:email]
     render status: :ok, json: { jwt: user.generate_jwt } # generate_jwt 会抽离到user model中
   end
 end
