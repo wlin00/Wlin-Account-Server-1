@@ -1,18 +1,10 @@
 class Api::V1::ItemsController < ApplicationController
-  # def show # 测试按id查询
-  #   item = Item.find_by_id params[:id]
-  #   if item
-  #     render json: { resource: item } 
-  #   else
-  #     render json: { resource: false }
-  #   end    
-  # end
-  def show # 分页查询账单记录
-    items = Item.page(params[:page]).per(10)
+  def show # 分页查询账单记录 & 加入时间范围查询参数
+    items = Item.where({ created_at: params[:created_after]..params[:created_before] }).page(params[:page]).per(10)
     render json: { 
       resource: items, pager: {
-        page: params[:page] || '1',
-        per_page: '10', # pageSize
+        page: params[:page] || 1,
+        per_page: Item.default_per_page, # pageSize
         count: Item.count
       }
     }, status: 200 # 可修改返回状态码

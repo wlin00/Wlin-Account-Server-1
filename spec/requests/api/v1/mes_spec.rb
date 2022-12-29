@@ -1,8 +1,8 @@
 require 'rails_helper'
 
-RSpec.describe "Api::V1::Mes", type: :request do
-  describe "GET /api/v1/me" do
-    it "can get info" do # 期望有User账号后，能进行会话登陆，登陆后状态码200 & 响应体中有key为jwt & value为string的字段
+RSpec.describe "Mes", type: :request do
+  describe "show" do
+    it "(get /api/v1/me) can get user info" do # 期望有User账号后，能进行会话登陆，登陆后状态码200 & 响应体中有key为jwt & value为string的字段
       user = User.create email: 'wlin0z@163.com'
       post '/api/v1/session', params: { email: 'wlin0z@163.com', code: '123456' } # 模拟发送登陆（创建会话）请求
       json = JSON.parse response.body
