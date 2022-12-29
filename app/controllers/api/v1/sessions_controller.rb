@@ -16,8 +16,6 @@ class Api::V1::SessionsController < ApplicationController
     end
     # 登陆校验成功，创建响应数据；载荷里放入uid
     # 在rails密钥管理中写入 hmac的密钥 -> hmac_secret: 'wlin$ecretK3y5050'
-    payload = { user_id: user.id }
-    token = JWT.encode payload, Rails.application.credentials.hmac_secret, 'HS256' # 传入载荷、密钥、加密算法：对称加密Hmac256 来生成jwt加密字符串
-    render status: :ok, json: { jwt: token }
+    render status: :ok, json: { jwt: user.generate_jwt } # generate_jwt 会抽离到user model中
   end
 end
