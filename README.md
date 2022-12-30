@@ -529,4 +529,15 @@
     end
   ```
 
+  19、快速完成 `Tags相关接口`
+  (1) 创建Tags的model，具备两个`必传`属性：name 和 sign， 有一个`引用属性user`，和一个普通属性`deleted_at`用于标签删除
+  ```rb
+    bin/rails g model tag user:references name:string sign:string deleted_at:datetime
+  ```
+
+  (2) 创建Tags的controller
+  ```rb
+    bin/rails g controller api/v1/tags_controller
+  ```
+
 
