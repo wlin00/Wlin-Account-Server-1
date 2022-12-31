@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "Items", type: :request do
   # 测试《账单记录查询》接口 - 可分页查询 - 可根据请求头的jwt进行用户鉴权，让用户能查询自己的数据
-  describe "show" do
+  describe "index" do
     it "(get /api/v1/items) can index by page" do # 用 describe 描述本次用例要测试的内容（每次新的describe会清空测试数据库的数据）
       # 测试分页前，先模拟有两个用户，各自具备11条记录
       user1 = User.create email: '1@qq.com'
@@ -22,7 +22,7 @@ RSpec.describe "Items", type: :request do
     end
   end
   # 测试《账单记录查询》接口 - 按开始、结束时间范围查询
-  describe "show" do
+  describe "index" do
     it "(get /api/v1/items) can index by created_before & created_after" do # 用 describe 描述本次用例要测试的内容（每次新的describe会清空测试数据库的数据）
       user1 = User.create email: '1@qq.com'
       item1 = Item.create amount: 100, created_at: '2022-01-01', user_id: user1.id
@@ -37,7 +37,7 @@ RSpec.describe "Items", type: :request do
     end
   end
   # 测试《账单记录查询》接口 - 按开始、结束时间范围查询 - 只传入其中一个查询条件的case
-  describe "show" do
+  describe "index" do
     it "(get /api/v1/items) can index by created_before | created_after" do # 用 describe 描述本次用例要测试的内容（每次新的describe会清空测试数据库的数据）
       user1 = User.create email: '1@qq.com'
       item1 = Item.create amount: 100, created_at: '2018-01-01', user_id: user1.id

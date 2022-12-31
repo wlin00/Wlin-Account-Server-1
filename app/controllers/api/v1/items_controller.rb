@@ -1,5 +1,5 @@
 class Api::V1::ItemsController < ApplicationController
-  def show # 分页查询账单记录 & 加入时间范围查询参数 & 根据请求头中的jwt来筛选出当前用户权限的数据
+  def index # 分页查询账单记录 & 加入时间范围查询参数 & 根据请求头中的jwt来筛选出当前用户权限的数据
     # 先获取jwt中间件处理后的《当前用户id》, 把它当作查询的where条件之一
     current_user_id = request.env['current_user_id'] rescue nil
     return head 401 unless current_user_id # 若当前查询没有jwt凭证，表示无权限，返回401 unauthorized
