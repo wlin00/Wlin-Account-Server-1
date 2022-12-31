@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>ValidationCodes API</title>
+    <title>标签 API</title>
     <meta charset="utf-8">
     <style>
       
@@ -106,11 +106,11 @@ table th, table td {
   </head>
   <body>
     <div class="container">
-      <h1>ValidationCodes API</h1>
+      <h1>标签 API</h1>
 
       <div class="article">
-        <h2>send validation code</h2>
-        <h3>POST /api/v1/validation_codes</h3>
+        <h2>create tag</h2>
+        <h3>POST /api/v1/tags</h3>
 
           <h3>Parameters</h3>
           <table class="parameters table table-striped table-bordered table-condensed">
@@ -123,31 +123,91 @@ table th, table td {
             <tbody>
               <tr>
                 <td class="required">
-                    <span class="name">email</span>
+                    <span class="name">name</span>
                 </td>
                 <td>
-                  <span class="description">Email</span>
+                  <span class="description">名称</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="required">
+                    <span class="name">sign</span>
+                </td>
+                <td>
+                  <span class="description">符号</span>
                 </td>
               </tr>
             </tbody>
           </table>
 
+          <h3>Response Fields</h3>
+          <table class="response-fields table table-striped table-bordered table-condensed">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                    <span class="name">resource[id]</span>
+                </td>
+                <td>
+                  <span class="description">ID</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                    <span class="name">resource[name]</span>
+                </td>
+                <td>
+                  <span class="description">名称</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                    <span class="name">resource[sign]</span>
+                </td>
+                <td>
+                  <span class="description">符号</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                    <span class="name">resource[user_id]</span>
+                </td>
+                <td>
+                  <span class="description">用户ID</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                    <span class="name">resource[deleted_at]</span>
+                </td>
+                <td>
+                  <span class="description">删除时间</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
           <h3>Request</h3>
 
             <h4>Headers</h4>
             <pre class="request headers">Version: HTTP/1.0
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo3NzEsImV4cCI6MTY3MjQ3MjM1OH0.4hROXS7qDG_3flRzzwsthiPZrFxvTTbgjHJwF_Zbucc
 Accept: application/json
 Content-Type: application/json
 Host: example.org
 Cookie: </pre>
 
           <h4>Route</h4>
-          <pre class="request route highlight">POST /api/v1/validation_codes</pre>
+          <pre class="request route highlight">POST /api/v1/tags</pre>
 
 
             <h4>Body</h4>
-            <pre class="request body">{"email":"wlin0z@163.com"}</pre>
+            <pre class="request body">{"name":"x","sign":"x"}</pre>
 
 
             <h3>Response</h3>
@@ -160,15 +220,24 @@ X-Permitted-Cross-Domain-Policies: none
 Referrer-Policy: strict-origin-when-cross-origin
 Content-Type: application/json; charset=utf-8
 Vary: Accept
-ETag: W/&quot;44136fa355b3678a1146ad16f7e8649e&quot;
+ETag: W/&quot;bf089379f70d5ac37bba90ef03f4a912&quot;
 Cache-Control: max-age=0, private, must-revalidate
-X-Request-Id: 32ea4403-9226-43e0-8867-a79bf0c0cdeb
-X-Runtime: 0.025800
-Content-Length: 2</pre>
+X-Request-Id: d4caa2d5-9f8c-4cea-ad39-d915fd1ad3f1
+X-Runtime: 0.006070
+Content-Length: 158</pre>
             <h4>Status</h4>
             <pre class="response status">200 OK</pre>
               <h4>Body</h4>
               <pre class="response body">{
+  &quot;resource&quot;: {
+    &quot;id&quot;: 1055,
+    &quot;user_id&quot;: 771,
+    &quot;name&quot;: &quot;x&quot;,
+    &quot;sign&quot;: &quot;x&quot;,
+    &quot;deleted_at&quot;: null,
+    &quot;created_at&quot;: &quot;2022-12-31T05:39:18.157Z&quot;,
+    &quot;updated_at&quot;: &quot;2022-12-31T05:39:18.157Z&quot;
+  }
 }</pre>
       </div>
     </div>

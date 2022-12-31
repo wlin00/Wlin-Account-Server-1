@@ -14,4 +14,14 @@ class Api::V1::TagsController < ApplicationController
       }
     }, status: :ok
   end
+  def create # 创建
+    current_user_id = request.env['current_user_id']
+    return head 401 unless current_user_id # 若当前查询没有jwt凭证，返回401 unauthorized
+    tag = Tag.new sign: params[:sign], name: params[:name], user_id: current_user_id
+    if tag.save
+      render json: { resource: tag }
+    else
+      render json: { errors: tag.errors }, status: 422
+    end
+  end
 end

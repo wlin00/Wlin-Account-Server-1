@@ -49,9 +49,20 @@ RSpec.describe "Items", type: :request do
       expect(json['resource'][0]['id']).to eq item2.id
     end
   end
-  # 测试《账单记录创建》接口
+  # 测试《账单记录创建》接口，未登陆创建
   describe "create" do
-    it "(post /api/v1/items) can create a record" do # 用 describe 描述本次用例要测试的内容（每次新的describe会清空测试数据库的数据）
+    it "(post /api/v1/items) can not create a record without login" do # 用 describe 描述本次用例要测试的内容（每次新的describe会清空测试数据库的数据）
+      user1 = User.create email: '1@qq.com'
+      # 数据库是否新增一条数据
+      expect {
+        post '/api/v1/items', params: { amount: 99 }
+      }.to change {Item.count}.by 0
+      expect(response).to have_http_status 401 # 期待请求的响应状态码为200
+    end
+  end
+  # 测试《账单记录创建》接口，已登陆创建
+  describe "create" do
+    it "(post /api/v1/items) can create a record in login" do # 用 describe 描述本次用例要测试的内容（每次新的describe会清空测试数据库的数据）
       user1 = User.create email: '1@qq.com'
       # 数据库是否新增一条数据
       expect {
@@ -59,6 +70,7 @@ RSpec.describe "Items", type: :request do
       }.to change {Item.count}.by 1
       expect(response).to have_http_status 200 # 期待请求的响应状态码为200
       json = JSON.parse response.body
+      expect(json['resource']['amount']).to eq 99 # 测试当前响应的amount字段是否等于传入的值
       expect(json['resource']['amount']).to eq 99 # 测试当前响应的amount字段是否等于传入的值
       expect(json['resource']['id']).not_to be_nil # 测试当前响应的创建记录的id是否存在（不为空nil）
     end
