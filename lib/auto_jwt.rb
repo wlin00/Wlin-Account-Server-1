@@ -4,7 +4,7 @@ class AutoJwt # AutoJwt 中间件：自动解密请求头中的jwt，并将其pa
   end
   def call(env) # 当中间件被调用时（routes之后，controller 之前），会执行call钩子
     # jwt检测 跳过以下不需要登陆态的接口
-    return @app.call(env) if ['/api/v1/session','/api/v1/validation_codes'].include? env['PATH_INFO']
+    return @app.call(env) if ['/', '/api/v1/session','/api/v1/validation_codes'].include? env['PATH_INFO']
     # 获取请求头，解密jwt获取其信息，获取当前登陆用户id，并存放在当前request.env中
     header = env['HTTP_AUTHORIZATION']
     jwt = header.split(' ')[1] rescue ''

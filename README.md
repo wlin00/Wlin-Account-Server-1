@@ -96,7 +96,7 @@
     ENTRYPOINT bundle exec puma
   ```
 
-  7、执行代码 - 自动化云服务器部署
+  7、执行代码 - 自动化云服务器部署， 先尝试docker中链接云服务器：ssh mangosteen@47.94.212.148
   ```sh
     # （1）linux里打包源代码到云服务器（scp -> ssh cp），然后在云服务器构建 Dockerfile出生产环境，并写入生产环境密钥
     sh bin/pack_for_remote.sh
@@ -217,6 +217,9 @@
     RUN bundle install --local
     ADD mangosteen-*.tar.gz ./
     ENTRYPOINT bundle exec puma
+
+    # (5) 若更新数据库，遇到《Error response from daemon》则表示需要重启docker
+    docker restart db-for-mangosteen-production # db-for-mangosteen-production 为当前环境的db_container_name
   ```
 
 
@@ -286,6 +289,8 @@
     curl http://127.0.0.1:3000/users/1
     # post 路由中调用
     curl -X POST http://127.0.0.1:3000/api/v1/validation_codes -H "Content-Type: application/json" -d '{"email":"wlin0z@163.com"}'
+    # 部署云服务器后， 用curl模拟验证码请求（因这个请求不需要jwt鉴权）
+    curl -X POST  http://47.94.212.148:3000/api/v1/validation_codes -H "Content-Type: application/json" -d '{"email":"wlin0z@163.com"}'
     # 手动在bin/rails console中创建记录，如创建一条验证码, 并测试发送邮件功能
     validation_code = ValidationCode.new email: 'wlin0z@163.com', kind: 'sign_in'
     validation_code.save
