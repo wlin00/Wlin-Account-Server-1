@@ -10,6 +10,6 @@ class ValidationCode < ApplicationRecord
     self.code = SecureRandom.random_number.to_s[2..7]
   end
   def send_email
-    UserMailer.welcome_email(self.email) # 测试直接发送邮件：添加 .deliver!
+    UserMailer.welcome_email(self.email).deliver # 测试直接发送邮件：添加 .deliver!
   end  
 end
