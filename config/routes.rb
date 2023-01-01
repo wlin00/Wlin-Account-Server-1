@@ -7,7 +7,11 @@ Rails.application.routes.draw do
       resources :validation_codes, only: [:create]
       resource :session, only: [:create, :destroy]
       resource :me, only: [:show]
-      resources :items
+      resources :items do
+        collection do
+          get :summary # 添加/api/v1/items/summary 图表查询接口
+        end
+      end
       resources :tags
     end
   end
