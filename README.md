@@ -261,9 +261,12 @@
     bin/rails db:migrate
   ```
   
-  3、撤销上次更新操作
+  3、撤销上次更新操作 & 给数据库添加字段
   ```rb
+    # 撤销操作
     bin/rails db:rollback step=1
+    # 给某个表添加字段
+    bin/rails g migration AddKindToItem
   ```
 
   4、创建某个表如User的`controller`, 可以初始化方法如show、create， 具体的`api逻辑`在此实现

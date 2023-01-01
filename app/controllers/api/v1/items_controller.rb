@@ -17,7 +17,8 @@ class Api::V1::ItemsController < ApplicationController
   def create # 创建账单记录
     current_user_id = request.env['current_user_id'] rescue nil
     return head 401 unless current_user_id # 若当前查询没有jwt凭证，表示无权限，返回401 unauthorized
-    item = Item.new amount: params[:amount], user_id: current_user_id
+    item = Item.new params.permit(:amount, :happen_at, tags_id: []) # 简便写法：从入参中提取必传字段
+    item.user_id = current_user_id
     if item.save
       render json: { resource: item }
     else
