@@ -23,7 +23,7 @@ RSpec.describe "ValidationCodes", type: :request do
       post '/api/v1/validation_codes', params: { email: 'wlin0z' }
       expect(response).to have_http_status(422) # 期待请求的响应状态码为200
       json = JSON.parse response.body
-      expect(json['errors']['email'][0]).to eq('当前参数格式有误,请修改')
+      expect(json['errors']['email'][0]).to eq('is invalid')
     end
   end
 end
