@@ -6,7 +6,7 @@ class Api::V1::SessionsController < ApplicationController
     end
     # 若当前非测试环境，需要校验本次会话创建前是否发送验证码
     if !Rails.env.test?
-      canSignInFlag = ValidationCodes.exists? email: params[:email], code: params[:code]
+      canSignInFlag = ValidationCode.exists? email: params[:email], code: params[:code]
       return render status: :unauthorized, json: { errors: '用户名或验证码错误' } unless canSignInFlag
     end
     # 创建会话，若当前user是否存在于User表中，则查询到当user，否则创建新的user（使用rails的 User.find_or_create_by 方法来创建或查询）
