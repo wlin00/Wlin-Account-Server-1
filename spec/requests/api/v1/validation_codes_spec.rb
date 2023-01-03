@@ -17,4 +17,13 @@ RSpec.describe "ValidationCodes", type: :request do
       expect(response).to have_http_status(429) # 期待频繁请求的响应状态码为429
     end
   end
+  # 测试《创建验证码》接口，邮箱如果不合法会返回422
+  describe "create" do 
+    it "(post /api/v1/validation_codes) needs promissory email" do
+      post '/api/v1/validation_codes', params: { email: 'wlin0z' }
+      expect(response).to have_http_status(422) # 期待请求的响应状态码为200
+      json = JSON.parse response.body
+      expect(json['errors']['email'][0]).to eq('当前参数格式有误,请修改')
+    end
+  end
 end

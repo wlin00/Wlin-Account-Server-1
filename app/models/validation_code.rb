@@ -1,5 +1,7 @@
 class ValidationCode < ApplicationRecord
   validates :email, presence: true
+  # email必须是合法的邮箱地址
+  validates :email, format: {with: /\A.+@.+\z/ }
   # validation_code controller/model 代码重构， 和本身数据相关的可以放在model文件的生命周期钩子函数中
   # 定义before_create 钩子， 用于初始化时创建六位随机数
   # 定义after_create 钩子，用于 验证码validation_code 保存（入库）后，调用UserMailer邮件模块发送邮件
