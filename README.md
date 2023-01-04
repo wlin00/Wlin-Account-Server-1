@@ -437,8 +437,8 @@
 
   (2) 前后端使用 `jwt` 进行 `登录鉴权` 
   ```ts
-    - 前端登陆后，后端返回jwt，前端将jwt存储在 localstorage 里并在axios请求头进行拦截，在每一个请求头里添加jwt（一般是Authorization的字段）
-    - 后端如果发现请求头中有authorization字段，就解密jwt，验证里外的uid是否一致来确定jwt是否被篡改从而进行登陆鉴权
+    - 前端登录后，后端返回jwt，前端将jwt存储在 localstorage 里并在axios请求头进行拦截，在每一个请求头里添加jwt（一般是Authorization的字段）
+    - 后端如果发现请求头中有authorization字段，就解密jwt，验证里外的uid是否一致来确定jwt是否被篡改从而进行登录鉴权
   ```  
    
   (3) jwt 实例的`结构解析`
@@ -473,7 +473,7 @@
   (5) 将jwt的decode抽离成rails的 `中间件` 
   ```rb
     - 修改application.rb
-      # 引入自定义的jwt中间件，用于route -> controller之间的jwt处理，会提取当前登陆用户的user_id
+      # 引入自定义的jwt中间件，用于route -> controller之间的jwt处理，会提取当前登录用户的user_id
       require_relative "../lib/auto_jwt" 
       # class Application 中，使用中间件
       config.middleware.use AutoJwt
@@ -488,20 +488,20 @@
   ```  
 
 
-  18、`登陆接口`相关笔记
+  18、`登录接口`相关笔记
   (1) rails创建 `session_controller`：
   ```rb
     bin/rails g controller api/v1/sessions_controller # controller前缀为复数
   ```
-  (2) 编写登陆接口前, 先编写登录接口的测试用例，测试驱动开发
+  (2) 编写登录接口前, 先编写登录接口的测试用例，测试驱动开发
   ```rb
     # spec/requests/api/v1/sessions_spec.rb
     require 'rails_helper'
     RSpec.describe "Api::V1::Sessions", type: :request do
       describe "POST /api/v1/session" do
-        it "can create a session" do # 期望有User账号后，能进行会话登陆，登陆后状态码200 & 响应体中有key为jwt & value为string的字段
+        it "can create a session" do # 期望有User账号后，能进行会话登录，登录后状态码200 & 响应体中有key为jwt & value为string的字段
           User.create email: 'wlin0z@163.com'
-          post '/api/v1/session', params: { email: 'wlin0z@163.com', code: '123456' } # 模拟发送登陆（创建会话）请求
+          post '/api/v1/session', params: { email: 'wlin0z@163.com', code: '123456' } # 模拟发送登录（创建会话）请求
           expect(response).to have_http_status(200)
           json = JSON.parse response.body
           expect(json['jwt']).to be_a(String) # 期望响应体的jwt字段是个string，若期望jwt为null可以写成 .to be_nil
@@ -509,7 +509,7 @@
       end
     end
   ```
-  (3) 编写登陆接口，即创建会话接口 `create` 
+  (3) 编写登录接口，即创建会话接口 `create` 
   ```rb
     require 'jwt'
     class Api::V1::SessionsController < ApplicationController
@@ -521,14 +521,14 @@
       # 若前当非测试环境，需先进行《当前会话前是否发送验证码》校验
       if !Rails.env.test?
         canSignInFlag = ValidationCodes.exists? email: params[:email], code: params[:code], used_at: nil
-        return render status: :unauthorized unless canSignInFlag # 若不能登陆则return
+        return render status: :unauthorized unless canSignInFlag # 若不能登录则return
       end
       # 创建会话，校验当前user是否存在于User表中（防止错误删除了User表)
       user = User.find_by_email params[:email]
       if user.nil?
         return render status: :not_found, json: {errors: '用户不存在'}
       end
-      # 登陆校验成功，创建响应数据；载荷里放入uid
+      # 登录校验成功，创建响应数据；载荷里放入uid
       # 在rails密钥管理中写入 hmac的密钥 -> hmac_secret: 'wlin$ecretK3y5050'
       payload = { user_id: user.id }
       # 创建JWT，定义header、payload、signature，传入payload、加密密钥和header中的加密算法

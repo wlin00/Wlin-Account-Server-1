@@ -53,7 +53,7 @@ RSpec.describe "Items", type: :request do
       expect(json['resource'][0]['id']).to eq item2.id
     end
   end
-  # 测试《账单记录创建》接口，未登陆创建
+  # 测试《账单记录创建》接口，未登录创建
   describe "create" do
     it "(post /api/v1/items) can not create a record without login" do # 用 describe 描述本次用例要测试的内容（每次新的describe会清空测试数据库的数据）
       user1 = User.create email: '1@qq.com'
@@ -65,7 +65,7 @@ RSpec.describe "Items", type: :request do
       expect(response).to have_http_status 401 # 期待请求的响应状态码为200
     end
   end
-  # 测试《账单记录创建》接口，已登陆创建
+  # 测试《账单记录创建》接口，已登录创建
   describe "create" do
     it "(post /api/v1/items) can create a record in login" do # 用 describe 描述本次用例要测试的内容（每次新的describe会清空测试数据库的数据）
       user = User.create email: '1@qq.com'

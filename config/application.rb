@@ -12,7 +12,7 @@ require "action_mailbox/engine"
 require "action_text/engine"
 require "action_view/railtie"
 require "action_cable/engine"
-require_relative "../lib/auto_jwt" # 引入自定义的jwt中间件，用于route -> controller之间的jwt处理，会提取当前登陆用户的user_id
+require_relative "../lib/auto_jwt" # 引入自定义的jwt中间件，用于route -> controller之间的jwt处理，会提取当前登录用户的user_id
 # require "rails/test_unit/railtie"
 
 # Require the gems listed in Gemfile, including any gems

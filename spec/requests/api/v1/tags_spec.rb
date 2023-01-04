@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe "Tags", type: :request do
-  # 测试《标签记录查询》接口 - 已登陆 & 可分页查询 - 可根据请求头的jwt进行用户鉴权，让用户能查询自己的数据
+  # 测试《标签记录查询》接口 - 已登录 & 可分页查询 - 可根据请求头的jwt进行用户鉴权，让用户能查询自己的数据
   describe "index" do
     it "(get /api/v1/tags) can index by page" do # 用 describe 描述本次用例要测试的内容（每次新的describe会清空测试数据库的数据）
       # 测试分页前，先模拟有两个用户，各自具备标签记录
@@ -21,7 +21,7 @@ RSpec.describe "Tags", type: :request do
       expect(json['resource'].size).to eq 1
     end
   end
-  # 测试《标签记录创建》接口，未登陆
+  # 测试《标签记录创建》接口，未登录
   describe "create" do
     it "(post /api/v1/tags) can not create a record without login" do # 用 describe 描述本次用例要测试的内容（每次新的describe会清空测试数据库的数据）
       user1 = User.create email: '1@qq.com'
@@ -32,7 +32,7 @@ RSpec.describe "Tags", type: :request do
       expect(response).to have_http_status 401 # 期待请求的响应状态码为200
     end
   end
-  # 测试《标签记录创建》接口，已登陆
+  # 测试《标签记录创建》接口，已登录
   describe "create" do
     it "(post /api/v1/tags) can create a record in login" do # 用 describe 描述本次用例要测试的内容（每次新的describe会清空测试数据库的数据）
       user1 = User.create email: '1@qq.com'
@@ -76,7 +76,7 @@ RSpec.describe "Tags", type: :request do
       expect(json['resource']['name']).to eq 'y'
       expect(json['resource']['sign']).to eq 'x'
     end
-    # 测试《标签记录更新》接口，登陆后更新别人的标签
+    # 测试《标签记录更新》接口，登录后更新别人的标签
       it '(patch /api/v1/tags/:id) can get a record in login' do
       user1 = User.create email: '1@qq.com'
       user2 = User.create email: '2@qq.com'
@@ -103,7 +103,7 @@ RSpec.describe "Tags", type: :request do
       json = JSON.parse response.body
       expect(json['resource']['id']).to eq tag.id
     end
-    # 测试《单个标签记录查询》接口，登陆后查询别人的标签
+    # 测试《单个标签记录查询》接口，登录后查询别人的标签
     it '(get /api/v1/tags/:id) can not update a recrod of other people' do
       user1 = User.create email: '1@qq.com'
       user2 = User.create email: '2@qq.com'
@@ -131,7 +131,7 @@ RSpec.describe "Tags", type: :request do
       tag.reload
       expect(tag.deleted_at).not_to be_nil # 希望已经被删除的标签记录，deleted_at字段非空
     end
-    # 测试《单个标签记录删除》接口，登陆后删除别人的标签
+    # 测试《单个标签记录删除》接口，登录后删除别人的标签
     it '(delete /api/v1/tags/:id) can not delete a recrod of other people' do
       user1 = User.create email: '1@qq.com'
       user2 = User.create email: '2@qq.com'
