@@ -13,7 +13,7 @@ class AutoJwt # AutoJwt 中间件：自动解密请求头中的jwt，并将其pa
     rescue JWT::ExpiredSignature
       return [401, {}, [JSON.generate({reason: 'token expired', message: '当前登录已过期,请重新登录'})]] # 401 status case1：jwt 过期
     rescue
-      return [401, {}, [JSON.generate({reason: '当前未登录，请先登录'})]] # 401 status case1：jwt 无效（可能被篡改）
+      return [401, {}, [JSON.generate({reason: 'token invalid', message: '当前未登录，请先登录'})]] # 401 status case1：jwt 无效（可能被篡改）
     end
     env['current_user_id'] = payload[0]['user_id'] rescue nil # 之前controller中的请求头会带上jwt解密后的user_id，可以方便取用
     @status, @header, @response = @app.call(env) # @app.call 执行后续controller
