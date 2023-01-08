@@ -16,10 +16,10 @@ resource "Items" do
     let(:created_after) { Time.now - 10.days }
     let(:created_before) { Time.now + 10.days }
     example "get items list" do
-      tag = Tag.create name: 'x', sign:'x', user_id: current_user.id
+      tag = Tag.create name: 'x', sign:'x', user_id: current_user.id, kind: 'income'
       11.times do 
         Item.create! amount: 100, happen_at: '2020-10-30', tags_id: [tag.id], 
-          user_id: current_user.id 
+          user_id: current_user.id , kind: 'income'
       end
       do_request
       expect(status).to eq 200

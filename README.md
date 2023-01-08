@@ -270,6 +270,13 @@
     bin/rails db:rollback step=1
     # 给某个表添加字段
     bin/rails g migration AddKindToItem
+    # 若添加一个枚举字段，需要在对应字段的model文件添加：
+    enum kind: { expenses: 1, income: 2 }
+    validates :kind, presence: true
+    # 并且编辑镜像文件《AddKindToItem》：
+    def change
+      add_column :items, :kind, :integer, default: 1, null: false
+    end
   ```
 
   4、创建某个表如User的`controller`, 可以初始化方法如show、create， 具体的`api逻辑`在此实现

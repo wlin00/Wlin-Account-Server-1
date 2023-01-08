@@ -5,24 +5,25 @@ class Api::V1::ItemsController < ApplicationController
     return head 401 unless current_user_id # 若当前查询没有jwt凭证，表示无权限，返回401 unauthorized
     items = Item.where({ user_id: current_user_id })
       .where({ created_at: params[:created_after]..params[:created_before] })
-      .page(params[:page]).per(10)
+    items = items.where({ kind: params[:kind] }) unless params[:kind].blank?
+    items_page = items.page(params[:page]).per(10)
     render json: { 
-      resource: items, pager: {
+      resource: items_page, pager: {
         page: params[:page] || 1,
         per_page: Item.default_per_page, # pageSize
-        count: Item.count
+        count: items.count
       }
     }, status: 200 # 可修改返回状态码
   end
   def create # 创建账单记录
     current_user_id = request.env['current_user_id'] rescue nil
     return head 401 unless current_user_id # 若当前查询没有jwt凭证，表示无权限，返回401 unauthorized
-    item = Item.new params.permit(:amount, :happen_at, tags_id: []) # 简便写法：从入参中提取必传字段
+    item = Item.new params.permit(:amount, :happen_at, :kind, tags_id: []) # 简便写法：从入参中提取必传字段
     item.user_id = current_user_id
     if item.save
       render json: { resource: item }
     else
-      render json: { errors: item.errors }, status: 422  
+      render json: { errors: item.errors, message: '账单创建失败，请重试', }, status: 422  
     end  
   end
   def getFirstItem # 获取第一条账单

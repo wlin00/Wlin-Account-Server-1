@@ -4,20 +4,22 @@ class Api::V1::TagsController < ApplicationController
     current_user_id = request.env['current_user_id']
     return head 401 unless current_user_id # 若当前查询没有jwt凭证，返回401 unauthorized
     tags = Tag.where({ user_id: current_user_id })
-      .page(params[:page]).per(10)
+    tags = tags.where({ kind: params[:kind] }) unless params[:kind].nil?
+    tags_page = tags.page(params[:page]).per(10)
     render json: {
-      resource: tags,
+      resource: tags_page,
       pager: {
         page: params[:page] || 1,
         per_page: Tag.default_per_page,
-        count: Tag.count
+        count: tags.count
       }
     }, status: :ok
   end
   def create # 创建
     current_user_id = request.env['current_user_id']
     return head 401 unless current_user_id # 若当前查询没有jwt凭证，返回401 unauthorized
-    tag = Tag.new sign: params[:sign], name: params[:name], user_id: current_user_id
+    tag = Tag.new params.permit(:name, :sign, :kind)
+    tag.user_id = current_user_id
     if tag.save
       render json: { resource: tag }
     else
