@@ -3,7 +3,7 @@ class Api::V1::TagsController < ApplicationController
     # 先获取jwt中间件处理后的《当前用户id》，把它当作查询的where条件之一
     current_user_id = request.env['current_user_id']
     return head 401 unless current_user_id # 若当前查询没有jwt凭证，返回401 unauthorized
-    tags = Tag.where({ user_id: current_user_id })
+    tags = Tag.where({ user_id: current_user_id }).where({ deleted_at: nil })
     tags = tags.where({ kind: params[:kind] }) unless params[:kind].nil?
     tags_page = tags.page(params[:page]).per(10)
     render json: {
