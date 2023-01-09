@@ -40,6 +40,7 @@ resource "Items" do
       response_field :kind
       response_field :happen_at
       response_field :tags_id
+      response_field :deleted_at, "删除时间"
     end
     let(:amount) { 9900 }
     let(:kind) { 'expenses' }

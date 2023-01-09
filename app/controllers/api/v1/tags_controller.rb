@@ -52,7 +52,7 @@ class Api::V1::TagsController < ApplicationController
     if tag.save
       render json: { resource: tag }
     else
-      render json: { errors: tag.errors }, status: 422
+      render json: { errors: tag.errors, message: '删除标签失败，请重试' }, status: 422
     end
   end
 end

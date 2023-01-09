@@ -146,4 +146,27 @@ RSpec.describe "Items", type: :request do
       expect(json['total']).to eq 600
     end
   end
+  # 测试《单个账单记录删除》接口
+  describe "destory" do
+    # 测试《单个账单记录删除》接口，未登录
+    it '(delete /api/v1/items/:id) can not delete a reord without login' do
+      user = User.create email: '1@qq.com'
+      tag = Tag.create name: 'name1', sign: 'sign1', user_id: user.id
+      item = Item.create amount: 100, created_at: '2018-01-01', user_id: user.id, tags_id: [tag.id], happen_at: '2018-01-01T00:00:00+08:00'
+      delete "/api/v1/items/#{tag.id}"
+      expect(response).to have_http_status 401
+    end
+    # 测试《单个标签记录删除》接口，已登录
+    it '(delete /api/v1/items/:id) can delete a record in login' do
+      user = User.create email: '1@qq.com'
+      tag = Tag.create name: 'name1', sign: 'sign1', user_id: user.id
+      item = Item.create amount: 100, created_at: '2018-01-01', user_id: user.id, tags_id: [tag.id], happen_at: '2018-01-01T00:00:00+08:00'
+      delete "/api/v1/items/#{item.id}", headers: user.generate_auth_header
+      expect(response).to have_http_status 200
+      json = JSON.parse response.body
+      expect(json['resource']['id']).to eq item.id
+      item.reload
+      expect(item.deleted_at).not_to be_nil # 希望已经被删除的账单记录，deleted_at字段非空
+    end
+  end
 end

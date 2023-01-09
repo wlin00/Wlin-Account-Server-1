@@ -3,7 +3,7 @@ class Api::V1::ItemsController < ApplicationController
     # 先获取jwt中间件处理后的《当前用户id》, 把它当作查询的where条件之一
     current_user_id = request.env['current_user_id'] rescue nil
     return head 401 unless current_user_id # 若当前查询没有jwt凭证，表示无权限，返回401 unauthorized
-    items = Item.where({ user_id: current_user_id })
+    items = Item.where({ user_id: current_user_id }).where({ deleted_at: nil })
       .where({ created_at: params[:created_after]..params[:created_before] })
     items = items.where({ kind: params[:kind] }) unless params[:kind].blank?
     items_page = items.page(params[:page]).per(10)
@@ -68,5 +68,15 @@ class Api::V1::ItemsController < ApplicationController
       groups: groups,
       total: items.sum(:amount)
     }  
+  end
+  def destroy # 按id删除账单表
+    current_user_id = request.env['current_user_id']
+    item = Item.find params[:id]
+    item.deleted_at = Time.now
+    if item.save
+      render json: { resource: item }
+    else
+      render json: { errors: item.errors, message: '删除账单失败，请重试' }
+    end
   end
 end
