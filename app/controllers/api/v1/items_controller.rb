@@ -39,6 +39,7 @@ class Api::V1::ItemsController < ApplicationController
     items = Item
       .where(user_id: request.env['current_user_id'])
       .where(kind: params[:kind])
+      .where({ deleted_at: nil })
       .where(happen_at: params[:happened_after]..params[:happened_before])
     items.each do |item|  
       # 区分当前是按什么维度对数据进行分组，group_by可能为：1、happen_at 创建时间; 2、tag_id 标签id
@@ -68,6 +69,26 @@ class Api::V1::ItemsController < ApplicationController
       groups: groups,
       total: items.sum(:amount)
     }  
+  end
+  def overview
+    expensesItems = Item # 筛选时间范围内的支出列表
+      .where({ user_id: request.env['current_user_id'] })
+      .where({ kind: 'expenses' })
+      .where({ deleted_at: nil })
+      .where(happen_at: params[:happened_after]..params[:happened_before])
+    incomeItems = Item # 筛选时间范围内的收入列表
+      .where({ user_id: request.env['current_user_id'] })
+      .where({ kind: 'income' })
+      .where({ deleted_at: nil })
+      .where(happen_at: params[:happened_after]..params[:happened_before])  
+    expenses = sprintf("%.2f", (expensesItems.sum(:amount).to_f / 100)) # 转化输出结果为保留两位小数的字符串格式
+    income = sprintf("%.2f", (incomeItems.sum(:amount).to_f / 100)) # 转化输出结果为保留两位小数的字符串格式
+    profit = sprintf("%.2f", (incomeItems.sum(:amount) - expensesItems.sum(:amount)).to_f / 100) # 转化输出结果为保留两位小数的字符串格式
+    render json: {
+      expenses: expenses,
+      income: income,
+      profit: profit,
+    }, status: 200
   end
   def destroy # 按id删除账单表
     current_user_id = request.env['current_user_id']

@@ -146,6 +146,27 @@ RSpec.describe "Items", type: :request do
       expect(json['total']).to eq 600
     end
   end
+  # 测试《账单综合overview查询》接口
+  describe "overview" do
+    it "(get /api/v1/items/overview) can get overview" do
+      user = User.create! email: '1@qq.com'
+      tag1 = Tag.create! name: 'tag1', sign: 'x', user_id: user.id
+      tag2 = Tag.create! name: 'tag2', sign: 'x', user_id: user.id
+      tag3 = Tag.create! name: 'tag3', sign: 'x', user_id: user.id
+      Item.create! amount: 100, kind: 'income', tags_id: [tag1.id, tag2.id], happen_at: '2018-06-18T00:00:00+08:00', user_id: user.id
+      Item.create! amount: 200, kind: 'expenses', tags_id: [tag2.id, tag3.id], happen_at: '2018-06-18T00:00:00+08:00', user_id: user.id
+      Item.create! amount: 351, kind: 'expenses', tags_id: [tag3.id, tag1.id], happen_at: '2018-06-18T00:00:00+08:00', user_id: user.id
+      get '/api/v1/items/overview', params: {
+        happened_after: '2018-01-01',
+        happened_before: '2019-01-01',
+      }, headers: user.generate_auth_header
+      expect(response).to have_http_status 200
+      json = JSON.parse response.body
+      expect(json['expenses']).to eq "5.51"
+      expect(json['income']).to eq "1.00"
+      expect(json['profit']).to eq "-4.51"
+    end
+  end
   # 测试《单个账单记录删除》接口
   describe "destory" do
     # 测试《单个账单记录删除》接口，未登录
