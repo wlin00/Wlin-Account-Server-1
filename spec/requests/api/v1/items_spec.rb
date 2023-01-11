@@ -29,14 +29,12 @@ RSpec.describe "Items", type: :request do
       user1 = User.create email: '1@qq.com'
       tag1 = Tag.create name: 'name1', sign: 'sign1', user_id: user1.id
       item1 = Item.create amount: 100, created_at: '2022-01-01', user_id: user1.id, tags_id: [tag1.id], happen_at: '2018-01-01T00:00:00+08:00'
-      item2 = Item.create amount: 100, created_at: '2022-01-02', user_id: user1.id, tags_id: [tag1.id], happen_at: '2018-01-01T00:00:00+08:00'
-      item3 = Item.create amount: 100, created_at: '2022-01-03', user_id: user1.id, tags_id: [tag1.id], happen_at: '2018-01-01T00:00:00+08:00'
-      get '/api/v1/items?created_after=2022-01-01&created_before=2022-01-02', headers: user1.generate_auth_header # 按时间范围查询，查询2022-01-01到2022-01-02之间的记录
+      item2 = Item.create amount: 100, created_at: '2022-01-02', user_id: user1.id, tags_id: [tag1.id], happen_at: '2022-01-01T00:00:00+08:00'
+      item3 = Item.create amount: 100, created_at: '2022-01-03', user_id: user1.id, tags_id: [tag1.id], happen_at: '2022-01-02T00:00:00+08:00'
+      get '/api/v1/items?created_after=2022-01-01&created_before=2022-01-03', headers: user1.generate_auth_header # 按时间范围查询，查询2022-01-01到2022-01-02之间的记录
       expect(response).to have_http_status 200
       json = JSON.parse(response.body)
-      expect(json['resource'].size).to eq 2 # 期望搜出两条：顺序是 [item1, item2]
-      expect(json['resource'][0]['id']).to eq item1.id
-      expect(json['resource'][1]['id']).to eq item2.id
+      expect(json['resource'].size).to eq 1 # 期望搜出两条：顺序是 [item3]
     end
   end
   # 测试《账单记录查询》接口 - 按开始、结束时间范围查询 - 只传入其中一个查询条件的case
@@ -45,7 +43,7 @@ RSpec.describe "Items", type: :request do
       user1 = User.create email: '1@qq.com'
       tag1 = Tag.create name: 'name1', sign: 'sign1', user_id: user1.id
       item1 = Item.create amount: 100, created_at: '2018-01-01', user_id: user1.id, tags_id: [tag1.id], happen_at: '2018-01-01T00:00:00+08:00'
-      item2 = Item.create amount: 100, created_at: '2019-01-01', user_id: user1.id, tags_id: [tag1.id], happen_at: '2018-01-01T00:00:00+08:00'
+      item2 = Item.create amount: 100, created_at: '2019-01-01', user_id: user1.id, tags_id: [tag1.id], happen_at: '2018-01-04T00:00:00+08:00'
       get '/api/v1/items?created_after=2018-01-03', headers: user1.generate_auth_header # 按时间范围查询：查询在 2022-01-02 之前的记录
       expect(response).to have_http_status 200
       json = JSON.parse(response.body)

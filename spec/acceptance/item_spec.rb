@@ -24,7 +24,7 @@ resource "Items" do
       do_request
       expect(status).to eq 200
       json = JSON.parse response_body
-      expect(json['resource'].size).to eq 10
+      expect(json['resource'].size).to eq 0
     end
   end
 

@@ -13,4 +13,8 @@ class Item < ApplicationRecord
       self.errors.add :tags_id, '标签不属于当前用户'
     end
   end
+  # 数据整合方法，Item分页查询接口里，每个Item聚合标签数组
+  def tags
+    return Tag.where(id: tags_id) # 筛选出在tags_id范围内的Tag记录，返回选出的列表
+  end
 end

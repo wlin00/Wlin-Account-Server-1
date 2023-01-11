@@ -4,16 +4,17 @@ class Api::V1::ItemsController < ApplicationController
     current_user_id = request.env['current_user_id'] rescue nil
     return head 401 unless current_user_id # 若当前查询没有jwt凭证，表示无权限，返回401 unauthorized
     items = Item.where({ user_id: current_user_id }).where({ deleted_at: nil })
-      .where({ created_at: params[:created_after]..params[:created_before] })
+      .where({ happen_at: params[:created_after]..params[:created_before] })
     items = items.where({ kind: params[:kind] }) unless params[:kind].blank?
     items_page = items.page(params[:page]).per(10)
+    # 处理每条账单记录，塞入标签数据
     render json: { 
       resource: items_page, pager: {
         page: params[:page] || 1,
         per_page: Item.default_per_page, # pageSize
         count: items.count
       }
-    }, status: 200 # 可修改返回状态码
+    }, methods: :tags, status: 200 # 可修改返回状态码
   end
   def create # 创建账单记录
     current_user_id = request.env['current_user_id'] rescue nil
@@ -88,6 +89,8 @@ class Api::V1::ItemsController < ApplicationController
       expenses: expenses,
       income: income,
       profit: profit,
+      expensesItems: expensesItems,
+      incomeItems: incomeItems,
     }, status: 200
   end
   def destroy # 按id删除账单表
