@@ -50,6 +50,9 @@ class Api::V1::TagsController < ApplicationController
     # 在表中删除tag，实际上是把当前tag的deleted_at更新为Time.now
     tag.deleted_at = Time.now
     if tag.save
+      # 删除标签后，同时删除依赖当前标签的所有Item账单
+      Item.where('tags_id && ARRAY[?]::bigint[]', [tag.id])
+        .update!(deleted_at: Time.now)
       render json: { resource: tag }
     else
       render json: { errors: tag.errors, message: '删除标签失败，请重试' }, status: 422

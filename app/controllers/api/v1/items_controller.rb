@@ -59,7 +59,7 @@ class Api::V1::ItemsController < ApplicationController
     end
     # 收集获取hash后，遍历hash，得到最终分组聚合后的groups数据
     groups = hash
-      .map { |key, value| {"#{params[:group_by]}": key, amount: value} }
+      .map { |key, value| {"#{params[:group_by]}": key, amount: value, tags: params[:group_by] == 'tag_id' ? Tag.where(id: key) : nil } }
     # 排序时，区分当前分组维度来排序
     if params[:group_by] == 'happen_at'  
       groups.sort! { |a, b| a[:happen_at] <=> b[:happen_at] } # 对当前happen_at字段进行升序排序
@@ -69,7 +69,7 @@ class Api::V1::ItemsController < ApplicationController
     render json: {
       groups: groups,
       total: items.sum(:amount)
-    }  
+    }, status: 200
   end
   def overview
     expensesItems = Item # 筛选时间范围内的支出列表
