@@ -88,7 +88,7 @@ RSpec.describe "Tags", type: :request do
   # 按Tag的id单个查询
   describe 'show' do
     # 测试《单个标签记录查询》接口，未登录
-    it '(patch /api/v1/tags/:id) can not get a record without login' do
+    it '(get /api/v1/tags/:id) can not get a record without login' do
       user = User.create email: '1@qq.com'
       tag = Tag.create name: 'name', sign: 'sign', user_id: user.id
       get "/api/v1/tags/#{tag.id}"

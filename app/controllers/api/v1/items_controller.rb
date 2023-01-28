@@ -93,6 +93,12 @@ class Api::V1::ItemsController < ApplicationController
       incomeItems: incomeItems,
     }, status: 200
   end
+  def show
+    current_user_id = request.env['current_user_id']
+    item = Item.find params[:id]
+    return head 403 if item.user_id != current_user_id
+    render json: { resource: item }
+  end
   def destroy # 按id删除账单表
     current_user_id = request.env['current_user_id']
     item = Item.find params[:id]

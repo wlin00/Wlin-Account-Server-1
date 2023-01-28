@@ -165,6 +165,38 @@ RSpec.describe "Items", type: :request do
       expect(json['profit']).to eq "-4.51"
     end
   end
+  # 按Item的id单个查询
+  describe 'show' do
+    # 测试《单个标签记录查询》接口，未登录
+    it '(get /api/v1/items/:id) can not get a record without login' do
+      user = User.create email: '1@qq.com'
+      tag = Tag.create name: 'name1', sign: 'sign1', user_id: user.id
+      item = Item.create amount: 100, created_at: '2018-01-01', user_id: user.id, tags_id: [tag.id], happen_at: '2018-01-01T00:00:00+08:00'
+      get "/api/v1/items/#{item.id}"
+      expect(response).to have_http_status 401
+    end
+    # 测试《单个标签记录查询》接口，已登录
+    it '(get /api/v1/items/:id) can get a record in login' do
+      user = User.create email: '1@qq.com'
+      tag = Tag.create name: 'name1', sign: 'sign1', user_id: user.id
+      item = Item.create amount: 100, created_at: '2018-01-01', user_id: user.id, tags_id: [tag.id], happen_at: '2018-01-01T00:00:00+08:00'
+      get "/api/v1/items/#{item.id}", headers: user.generate_auth_header
+      expect(response).to have_http_status 200
+      json = JSON.parse response.body
+      expect(json['resource']['id']).to eq item.id
+    end
+    # 测试《单个标签记录查询》接口，登录后查询别人的账单
+    it '(get /api/v1/items/:id) can not get a recrod of other people' do
+      user1 = User.create email: '1@qq.com'
+      user2 = User.create email: '2@qq.com'
+      tag1 = Tag.create name: 'name', sign: 'sign', user_id: user1.id
+      tag2 = Tag.create name: 'name', sign: 'sign', user_id: user2.id
+      item1 = Item.create amount: 100, created_at: '2018-01-01', user_id: user1.id, tags_id: [tag1.id], happen_at: '2018-01-01T00:00:00+08:00'
+      item2 = Item.create amount: 100, created_at: '2018-01-01', user_id: user2.id, tags_id: [tag2.id], happen_at: '2018-01-01T00:00:00+08:00'
+      get "/api/v1/items/#{item2.id}", headers: user1.generate_auth_header
+      expect(response).to have_http_status 403
+    end
+  end
   # 测试《单个账单记录删除》接口
   describe "destory" do
     # 测试《单个账单记录删除》接口，未登录
