@@ -27,6 +27,17 @@ class Api::V1::ItemsController < ApplicationController
       render json: { errors: item.errors, message: '账单创建失败，请重试', }, status: 422  
     end  
   end
+  def update # 更新账单记录
+    current_user_id = request.env['current_user_id']
+    item = Item.find params[:id]
+    return head 403 if item.user_id != current_user_id
+    item.update params.permit(:amount, :happen_at, :kind, tags_id: []) # 若传了账单记录的参数其一才传参，否则保持当前record的属性与数据库表中一致
+    if item.save
+      render json: { resource: item }
+    else
+      render json: { errors: item.errors, message: '账单编辑失败，请重试' }, status: 422
+    end
+  end
   def getFirstItem # 获取第一条账单
     current_user_id = request.env['current_user_id'] rescue nil
     return head 401 unless current_user_id # 若当前查询没有jwt凭证，表示无权限，返回401 unauthorized
