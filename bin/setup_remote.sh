@@ -79,7 +79,7 @@ cd /home/$user/deploys/$version
 mkdir ./dist
 tar xf dist.tar.gz --directory=./dist
 cd -
-docker run -d -p 8080:80 \
+docker run -d -p 80:80 \
            --network=network1 \
            --name=$nginx_container_name \
            -v /home/$user/deploys/$version/nginx.default.conf:/etc/nginx/conf.d/default.conf \
